@@ -29,19 +29,19 @@ const addProdutoDB = async (objeto) => {
     }    
 }
 
-const updateProdutoDB = async (body) => {
+const updateProdutoDB = async (objeto) => {
     try {   
-        const { codigo, nome, descricao, quantidade_estoque, ativo, valor, data_cadastro, categoria }  = body; 
+        const { codigo, nome, descricao, quantidade_estoque, ativo, valor, data_cadastro, categoria }  = objeto; 
         const results = await pool.query(`UPDATE produtos set nome = $2 , descricao = $3, quantidade_estoque = $4, 
-        ativo = $5, valor = $6, data_cadastro = $7, categoria = $8 where codigo = $1 
-        returning codigo, nome, descricao, quantidade_estoque, ativo, valor, to_char(data_cadastro,'YYYY-MM-DD') as data_cadastro, categoria`,
-        [codigo, nome, descricao, quantidade_estoque, ativo, valor, data_cadastro, categoria]);        
+        valor = $5, data_cadastro = $6 where codigo = $1 
+        returning codigo, nome, descricao, quantidade_estoque,  valor, to_char(data_cadastro,'YYYY-MM-DD') as data_cadastro`,
+        [codigo, nome, descricao, quantidade_estoque, valor, data_cadastro]);        
         if (results.rowCount == 0){
             throw `Nenhum registro encontrado com o código ${codigo} para ser alterado`;
         }
         const produto = results.rows[0];
         return new Produto(produto.codigo, produto.nome, produto.descricao, produto.quantidade_estoque, 
-            produto.ativo, produto.valor, produto.data_cadastro, produto.categoria, "");
+             produto.valor, produto.data_cadastro);
     } catch (err) {
         throw "Erro ao alterar o produto: " + err;
     }      
