@@ -33,7 +33,7 @@ const updateProdutoDB = async (objeto) => {
     try {   
         const { codigo, nome, descricao, quantidade_estoque, ativo, valor, data_cadastro, categoria }  = objeto; 
         const results = await pool.query(`UPDATE produtos set nome = $2 , descricao = $3, quantidade_estoque = $4, 
-        valor = $5, data_cadastro = $6 where codigo = $1 
+        valor = $5, data_cadastro = $6 where codigo = $1
         returning codigo, nome, descricao, quantidade_estoque,  valor, to_char(data_cadastro,'YYYY-MM-DD') as data_cadastro`,
         [codigo, nome, descricao, quantidade_estoque, valor, data_cadastro]);        
         if (results.rowCount == 0){
@@ -49,7 +49,7 @@ const updateProdutoDB = async (objeto) => {
 
 const deleteProdutoDB = async (codigo) => {
     try {           
-        const results = await pool.query(`DELETE FROM produtos where codigo = $1`,
+        const results = await pool.query(` DELETE FROM produtos where codigo = $1`,
         [codigo]);
         if (results.rowCount == 0){
             throw `Nenhum registro encontrado com o código ${codigo} para ser removido`;

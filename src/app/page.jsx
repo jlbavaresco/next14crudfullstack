@@ -1,6 +1,7 @@
 
 import { getProdutosDB, addProdutoDB, deleteProdutoDB } from "@/bd/produtoUseCases";
 import Link from 'next/link';
+import { notFound, redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
 export const revalidate = 60; // revalida a cada 30 segundos
@@ -13,27 +14,47 @@ const createProduto = async (formData) => {
     quantidade_estoque: formData.get('quantidade_estoque'),
     valor: formData.get('valor'), data_cadastro: formData.get('data_cadastro')
   }
+  let error = "";
+  try {
+    const retProd = await addProdutoDB(objeto);
 
-  const retProd = await addProdutoDB(objeto);
+  } catch (err) {
+    error = 'Erro: ' + err;
+  }
 
-  console.log('retorno: ' + JSON.stringify(retProd));
-
-  revalidatePath('/');
+  if (error.length > 0) {
+    redirect(`/?message=${error}`);
+  } else {
+    revalidatePath('/');
+    redirect('/');
+  }
 };
 
 const deleteProduto = async (codigo) => {
   'use server';
+  let error = "";
+  try {
+    await deleteProdutoDB(codigo);
 
-  await deleteProdutoDB(codigo);
-  revalidatePath('/');
+  } catch (err) {
+    error = 'Erro: ' + err;
+  }
+
+  if (error.length > 0) {
+    redirect(`/?message=${error}`);
+  } else {
+    revalidatePath('/');
+    redirect('/');
+  }
 };
 
-export default async function Home() {
-
+export default async function Home({ searchParams }) {
+  const message = searchParams?.message || null;
   const produtos = await getProdutosDB();
   return (
     <div>
       <h2>Produtos</h2>
+      {message && <p style={{ color: 'red' }}>{message}</p>}
       <form action={createProduto} >
         <input type="text" name="nome" placeholder="Nome" /><br />
         <input type="text" name="descricao" placeholder="descricao" /><br />

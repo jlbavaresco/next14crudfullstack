@@ -2,7 +2,11 @@ import { notFound, redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { getProdutoPorCodigoDB, updateProdutoDB } from '@/bd/produtoUseCases';
 
-const ProdutoEditarPage = async ({ params }) => {
+
+const ProdutoEditarPage = async ({ params , searchParams}) => {
+
+    const message = searchParams?.message || null;
+    
     const produto = await getProdutoPorCodigoDB(params.produtoCodigo);
 
     const updateProduto = async (formData) => {
@@ -14,13 +18,22 @@ const ProdutoEditarPage = async ({ params }) => {
             quantidade_estoque: formData.get('quantidade_estoque'),
             valor: formData.get('valor'), data_cadastro: formData.get('data_cadastro')
         }
+        let error = "";
+        try {
+            const retProd = await updateProdutoDB(objeto);
+            console.log('retorno: ' + JSON.stringify(retProd));
+            
+        } catch (err) {  
+            error =   'Erro: ' + err;       
+           
+        }
+        if (error.length > 0){
+            redirect(`/produto/${params.produtoCodigo}/editar?message=${error}`);
+        } else {
+            revalidatePath('/');
+            redirect('/');
+        }
 
-        const retProd = await updateProdutoDB(objeto);
-
-        console.log('retorno: ' + JSON.stringify(retProd));
-
-        revalidatePath('/');
-        redirect('/');
     };
 
     if (!produto) {
@@ -30,6 +43,8 @@ const ProdutoEditarPage = async ({ params }) => {
     return (
         <div>
             <h2>Produto</h2>
+            {message && <p style={{ color: 'red' }}>{message}</p>}
+
             <form action={updateProduto} >
                 <input type="number" name="codigo" defaultValue={produto.codigo}
                     readOnly /><br />
